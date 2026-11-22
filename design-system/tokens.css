@@ -1,0 +1,13 @@
+/* duhbinchi design system: colour, type, radius and elevation tokens.
+   Every page (home and each project) loads this first. */
+:root{
+  --bg:#f5f3ef; --ink:#1d2126; --muted:#5f646c; --line:#dcd7cd;
+  --panel:rgba(255,255,255,.86); --chip:#efebe4; --surface:#fff; --surface-soft:#faf9f6;
+  --accent:#6e44d8; --accent-ink:#fff;
+  --r:14px; --shadow:0 10px 30px rgba(40,32,20,.12), 0 1px 2px rgba(40,32,20,.08);
+  --font:"Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  --mono:ui-monospace, SFMono-Regular, Menlo, monospace;
+  font:13px/1.45 var(--font); color:var(--ink);
+}
+*{box-sizing:border-box}
+body{background:var(--bg)}

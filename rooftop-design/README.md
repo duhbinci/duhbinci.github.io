@@ -26,7 +26,7 @@ An interactive, mobile-friendly Three.js model of the rooftop addition on the ex
 
 ## Run
 
-Use a local static server: `python3 -m http.server 8000`, then visit `http://localhost:8000`. To publish, enable GitHub Pages on `main` branch, `/ (root)` folder in **Settings → Pages**.
+From the repo root: `npm install`, then `npm run dev` and open this folder's path. `npm run build` writes the site to `dist/`; pushes to `main` deploy it through GitHub Actions.
 
 ## Important limitations
 This is a schematic design based on an evolving renovation brief, **not a measured survey, structural plan, MEP shop drawing, or building permit drawing**. The existing room is assumed demolished, existing staircase retained, and rooftop tank relocation is indicative only. Engineer must verify RCC loading, anchorage, tank support, wind/seismic design, waterproofing and drainage. Coordinates and window/door placements must be field-measured. No tank relocation or demolition should occur before structural review.

@@ -26,4 +26,4 @@ Values marked `[MEASURE]` in `laptop_case.scad` (board outline, screw holes, por
 
 ## Run
 
-Use a local static server: `python3 -m http.server 8000`, then visit `http://localhost:8000`. To publish, enable GitHub Pages on `main` branch, `/ (root)` folder in **Settings → Pages**.
+From the repo root: `npm install`, then `npm run dev` and open this folder's path. `npm run build` writes the site to `dist/`; pushes to `main` deploy it through GitHub Actions.
