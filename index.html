@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>duhbinci</title>
-<meta name="description" content="Sites and interactive projects by Kshitiz Wagle.">
+<title>Kshitiz Wagle · Projects</title>
+<meta name="description" content="Kshitiz Wagle, Senior Software Engineer (backend and AI systems). Portfolio and interactive projects.">
 <style>
   :root {
     --bg: #15141b; --surface: #1c1b22; --raised: #24232c; --fg: #edecee;
@@ -13,8 +13,13 @@
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace; }
   main { max-width: 960px; margin: 0 auto; padding: 64px 16px; }
-  h1 { margin: 0 0 4px; font-size: 28px; color: var(--accent); }
-  .lede { margin: 0 0 40px; color: var(--muted); }
+  h1 { margin: 0 0 6px; font-size: 32px; color: var(--fg); }
+  .role { margin: 0 0 4px; color: var(--accent); }
+  .lede { margin: 0 0 16px; color: var(--muted); }
+  .links { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0 0 48px; padding: 0; list-style: none; font-size: 14px; }
+  .links a { color: var(--mint); text-decoration: none; }
+  .links a:hover { text-decoration: underline; }
+  .section { margin: 0 0 16px; font-size: 13px; font-weight: normal; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
   .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
   .card { display: flex; flex-direction: column; gap: 8px; padding: 20px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: inherit; text-decoration: none; transition: border-color .15s, background .15s, transform .15s; }
   .card:hover, .card:focus-visible { border-color: var(--accent); background: var(--raised); transform: translateY(-2px); outline: none; }
@@ -29,8 +34,16 @@
 </head>
 <body>
 <main>
-  <h1>duhbinci</h1>
-  <p class="lede">Sites and interactive projects by Kshitiz Wagle.</p>
+  <h1>Kshitiz Wagle</h1>
+  <p class="role">Senior Software Engineer · Rippey AI</p>
+  <p class="lede">Python backends, document workflows and AI systems. Based in Lalitpur, Nepal (UTC+5:45), open to backend, platform and AI roles.</p>
+  <ul class="links">
+    <li><a href="mailto:dev@kshitizwagle.com.np">dev@kshitizwagle.com.np</a></li>
+    <li><a href="https://kshitizwagle.com.np/kshitiz-wagle.pdf">Résumé (PDF)</a></li>
+    <li><a href="https://www.linkedin.com/in/kshitizwagle">LinkedIn</a></li>
+    <li><a href="https://github.com/duhbinci">GitHub</a></li>
+  </ul>
+  <h2 class="section">Projects</h2>
   <div class="grid">
     <a class="card" href="https://kshitizwagle.com.np">
       <span class="tag tag--web">website</span>
