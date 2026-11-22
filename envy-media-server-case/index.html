@@ -1,0 +1,956 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Envy Media Server · 3D-Printed Case</title>
+<meta name="description" content="Interactive 3D model of a 3D-printable media server case for an HP ENVY x360 m6-aq103dx mainboard, with a 4-bay drive shelf, parts list, cost and print files.">
+<style>
+:root{
+  --bg:#f5f3ef; --ink:#1d2126; --muted:#5f646c; --line:#dcd7cd;
+  --panel:rgba(255,255,255,.86); --chip:#efebe4; --accent:#a94e1f; --accent-ink:#fff;
+  --print:#e6e1d8; --pcb:#2f7d4f; --drive:#8c949b; --fan:#30363c; --metal:#b87333; --port:#2f6fb3;
+  --warn:#9a6400; --warn-soft:#fbefd3; --ok:#2f7a4f; --ok-soft:#dcefe3;
+  --r:14px; --shadow:0 10px 30px rgba(40,32,20,.12), 0 1px 2px rgba(40,32,20,.08);
+  font:13px/1.45 "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif; color:var(--ink);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;-webkit-tap-highlight-color:transparent}
+#scene{position:fixed;inset:0}
+canvas{display:block;touch-action:none}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible+.sw{outline:2px solid var(--accent);outline-offset:2px}
+
+/* header */
+header{position:absolute;top:18px;left:20px;pointer-events:none;max-width:calc(100% - 340px)}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1{margin:2px 0 8px;font-size:24px;font-weight:700;letter-spacing:-.02em}
+#modes{display:inline-flex;gap:2px;padding:3px;margin:0 0 8px;background:var(--panel);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:10px;pointer-events:auto;box-shadow:var(--shadow)}
+#modes button{border:0;background:transparent;border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:500;color:var(--muted);white-space:nowrap}
+#modes button b{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:5px;background:var(--chip);color:var(--ink);font-size:10.5px;margin-right:5px}
+#modes button[aria-checked=true]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+#modes button[aria-checked=true] b{background:var(--accent);color:#fff}
+#modes .short{display:none}
+#note{margin:8px 0 0;max-width:380px;font-size:12.5px;color:var(--muted)}
+.stats{display:flex;flex-wrap:wrap;gap:6px}
+.stats span{background:var(--panel);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--muted)}
+.stats b{color:var(--ink);font-weight:600}
+#docs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0;pointer-events:auto}
+#docs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600;box-shadow:0 1px 2px rgba(40,32,20,.06)}
+#docs button:hover{border-color:var(--ink)}
+#docs button.dl{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* view switcher */
+#views{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);display:flex;gap:2px;padding:4px;background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:999px;box-shadow:var(--shadow);max-width:calc(100% - 24px);overflow-x:auto;scrollbar-width:none}
+#views::-webkit-scrollbar{display:none}
+#views button{border:0;background:transparent;border-radius:999px;padding:8px 15px;font-weight:500;white-space:nowrap;color:var(--muted);transition:background .2s,color .2s}
+#views button:hover{color:var(--ink)}
+#views button[aria-pressed=true]{background:var(--ink);color:#fff}
+
+/* layers panel */
+#panel{position:absolute;top:18px;right:18px;width:268px;max-height:calc(100% - 110px);overflow:auto;background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 14px 12px}
+#panel h2{margin:4px 0 2px;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.row{display:flex;align-items:center;gap:10px;padding:7px 2px;cursor:pointer;user-select:none}
+.row input{position:absolute;opacity:0;pointer-events:none}
+.row .lbl{flex:1}
+.row .key{width:10px;height:10px;border-radius:3px;border:1px solid rgba(0,0,0,.15);flex:none}
+.sw{width:30px;height:18px;border-radius:999px;background:#cfc9bf;position:relative;transition:background .2s;flex:none}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px #0003;transition:transform .2s}
+.row input:checked+.sw{background:var(--accent)}
+.row input:checked+.sw::after{transform:translateX(12px)}
+hr{border:0;border-top:1px solid var(--line);margin:8px 0}
+details{font-size:12.5px;color:var(--muted)}
+summary{cursor:pointer;font-weight:600;color:var(--ink);padding:4px 2px;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"＋";float:right;color:var(--muted)}
+details[open] summary::after{content:"－"}
+details ul{margin:6px 0 4px;padding-left:18px}
+details li{margin:3px 0}
+.fine{font-size:11px;color:var(--muted);margin:10px 2px 0}
+#layersBtn,#closePanel{display:none}
+.seg{display:inline-flex;gap:2px;padding:2px;background:var(--chip);border-radius:8px}
+.seg button{border:0;background:transparent;border-radius:6px;padding:4px 7px;font-size:11.5px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed=true]{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.tabs{display:flex;gap:2px;padding:3px;margin:0 0 12px;background:var(--chip);border-radius:9px}
+.tabs button{flex:1;border:0;background:transparent;border-radius:7px;padding:6px 0;font-weight:600;font-size:12.5px;color:var(--muted)}
+.tabs button[aria-selected=true]{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+[data-pane][hidden]{display:none}
+.plist{display:flex;flex-direction:column}
+.prow{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:9px;align-items:center;border:0;background:transparent;text-align:left;padding:6px 4px;border-radius:7px;font-size:12.5px}
+.prow:hover{background:var(--chip)}
+.prow[aria-pressed=true]{background:#fff;box-shadow:0 0 0 1px var(--ink)}
+.prow i{width:10px;height:10px;border-radius:3px;border:1px solid rgba(0,0,0,.15)}
+.prow small{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+
+/* selection card */
+#card{position:absolute;left:20px;bottom:22px;width:300px;background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:13px 14px 14px;transform:translateY(8px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+#card.show{opacity:1;transform:none;pointer-events:auto}
+#card .cat{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+#card h3{margin:4px 0 2px;font-size:16px;letter-spacing:-.01em}
+#card .dims{margin:0 0 6px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+#card p{margin:0;color:#41464d;font-size:13px}
+#card > button{position:absolute;top:8px;right:8px;border:0;background:transparent;width:28px;height:28px;border-radius:8px;color:var(--muted);font-size:18px;line-height:1}
+#card > button:hover{background:var(--chip)}
+#card .cardDl{display:inline-block;margin-top:10px;font-size:12.5px;font-weight:600;color:#fff;background:var(--ink);border-radius:999px;padding:6px 12px;text-decoration:none}
+#card .cardDl[hidden]{display:none}
+.tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:4px;padding:1px 6px}
+.tag.est{background:var(--warn-soft);color:var(--warn)}
+.tag.std{background:var(--ok-soft);color:var(--ok)}
+#legend{position:absolute;left:20px;bottom:22px;display:flex;flex-direction:column;gap:5px;background:var(--panel);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:11px;color:var(--ink);box-shadow:var(--shadow);transition:opacity .2s;pointer-events:none}
+#legend h2{margin:0 0 2px;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+#legend span{display:flex;align-items:center;gap:7px}
+#legend i{width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.18)}
+#legend em{font-style:normal;color:var(--muted);font-size:10.5px;margin-top:3px;max-width:190px}
+.dim{position:absolute;left:0;top:0;font-size:11px;font-weight:600;color:#2c2c2c;background:rgba(245,243,239,.92);padding:1px 6px;border-radius:4px;white-space:nowrap;pointer-events:none;font-variant-numeric:tabular-nums}
+#labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+#hint{position:absolute;left:20px;bottom:200px;font-size:12px;color:var(--muted);pointer-events:none;transition:opacity .4s}
+#loader{position:absolute;inset:0;display:grid;place-items:center;background:var(--bg);color:var(--muted);z-index:10;transition:opacity .4s;text-align:center;padding:24px}
+#loader.done{opacity:0;pointer-events:none}
+
+/* reading sheet */
+#sheet{position:absolute;inset:0;z-index:20;display:none;background:rgba(29,33,38,.28);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+#sheet.open{display:block}
+#sheet .box{position:absolute;top:18px;bottom:18px;left:50%;transform:translateX(-50%);width:min(780px,calc(100% - 36px));background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+#sheet .bar{display:flex;align-items:center;gap:10px;padding:12px 12px 0 14px}
+#sheet .bar .tabs{flex:1;margin:0;overflow-x:auto;scrollbar-width:none}
+#sheet .bar .tabs::-webkit-scrollbar{display:none}
+#sheet .bar .tabs button{flex:1 0 auto;padding:6px 10px}
+#closeSheet{border:0;background:var(--chip);border-radius:999px;width:32px;height:32px;flex:none;font-size:15px}
+#sheet .body{overflow-y:auto;padding:18px 22px 32px;font-size:14px;line-height:1.55}
+.doc{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.doc[hidden]{display:none}
+.doc h1{font-size:22px;margin:0}
+.doc h2{font-size:16px;margin:14px 0 0;letter-spacing:-.01em}
+.doc p,.doc ul,.doc ol{margin:0}
+.doc ul,.doc ol{padding-left:1.2em;display:flex;flex-direction:column;gap:5px}
+.doc .lede{color:var(--muted)}
+.doc a{text-decoration-color:var(--accent);text-underline-offset:2px;overflow-wrap:anywhere}
+.doc code{font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--chip);border-radius:4px;padding:1px 5px;overflow-wrap:anywhere}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+.doc table{border-collapse:collapse;width:100%;font-size:13px}
+.doc th,.doc td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line)}
+.doc th{font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:#faf9f6}
+.doc tr:last-child td{border-bottom:0}
+.doc td{font-variant-numeric:tabular-nums}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.kpi{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#faf9f6;display:flex;flex-direction:column;gap:2px}
+.kpi .k{font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.kpi .v{font-size:20px;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:12px;color:var(--muted)}
+.bom{display:flex;flex-direction:column;gap:10px}
+.bi{display:grid;grid-template-columns:2.6em minmax(0,1fr);gap:2px 8px}
+.bi .q{font-size:12px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px}
+.bi a{font-weight:600}
+.bi .src{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-left:6px}
+.bi .why{grid-column:2;color:var(--muted);font-size:13px}
+.files{display:flex;flex-direction:column;gap:8px}
+a.file{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px 12px;text-decoration:none;background:#faf9f6}
+a.file:hover{border-color:var(--ink)}
+a.file code{background:transparent;padding:0;font-weight:600}
+a.file span{grid-column:1;font-size:12.5px;color:var(--muted)}
+a.file b{grid-column:2;grid-row:1/span 2;font-size:12px;font-weight:600;color:#fff;background:var(--ink);border-radius:999px;padding:5px 11px;white-space:nowrap}
+a.file.ext b{background:var(--chip);color:var(--ink)}
+
+@media (max-width:760px){
+  header{top:12px;left:14px;max-width:calc(100% - 100px)}
+  h1{font-size:19px;margin-bottom:6px}
+  .stats span{font-size:11px;padding:2px 8px}
+  #layersBtn{display:block;position:absolute;top:12px;right:12px;border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:999px;padding:7px 13px;font-weight:600;font-size:13px;box-shadow:var(--shadow)}
+  #panel{display:none;top:auto;left:10px;right:10px;bottom:10px;width:auto;max-height:70vh;z-index:5;background:#fff;padding-top:12px}
+  #panel.open{display:block}
+  #closePanel{display:block;position:absolute;top:8px;right:8px;border:0;background:var(--chip);border-radius:999px;width:30px;height:30px}
+  #panel .tabs{margin-right:38px}
+  #views{bottom:calc(14px + env(safe-area-inset-bottom));left:12px;right:12px;transform:none;max-width:none}
+  #card{left:12px;right:12px;width:auto;bottom:calc(70px + env(safe-area-inset-bottom))}
+  #hint{left:0;right:0;text-align:center;bottom:calc(74px + env(safe-area-inset-bottom))}
+  #legend{display:none}
+  .stats span:nth-child(n+3),#note,#modes .long{display:none}
+  #modes .short{display:inline}
+  #modes{margin-bottom:6px}
+  #modes button{padding:5px 7px;font-size:11.5px}
+  #modes button b{margin-right:3px}
+  #docs{gap:4px;margin-top:6px}
+  #docs button{padding:4px 9px;font-size:11.5px}
+  #sheet .box{top:10px;bottom:10px;width:calc(100% - 20px)}
+  #sheet .body{padding:14px 16px 28px}
+}
+</style>
+</head>
+<body>
+<div id="scene"></div>
+<div id="labels"></div>
+<div id="loader">Loading 3D model…</div>
+
+<header>
+  <div class="eyebrow">3D-printed enclosure</div>
+  <h1>Envy Media Server</h1>
+  <div id="modes" role="radiogroup" aria-label="What to show">
+    <button data-mode="full" role="radio"><b>A</b><span class="long">Full build · with parts</span><span class="short">Full</span></button>
+    <button data-mode="printed" role="radio"><b>B</b><span class="long">Printed shell only</span><span class="short">Shell</span></button>
+    <button data-mode="parts" role="radio"><b>C</b><span class="long">Parts only · no case</span><span class="short">Parts</span></button>
+  </div>
+  <div class="stats">
+    <span><b>250 × 160 × 141</b> mm</span>
+    <span><b>4</b> drive bays</span>
+    <span><b>700–880 g</b> PLA</span>
+    <span>from <b>Rs 10,300</b></span>
+  </div>
+  <p id="note"></p>
+  <nav id="docs" aria-label="Build notes">
+    <button data-doc="cost">Cost</button>
+    <button data-doc="parts">Parts</button>
+    <button data-doc="display">Display</button>
+    <button data-doc="storage">Storage</button>
+    <button data-doc="files" class="dl">Download print files</button>
+  </nav>
+</header>
+
+<button id="layersBtn" aria-controls="panel" aria-expanded="false">Layers · Parts</button>
+
+<aside id="panel" aria-label="Layers">
+  <button id="closePanel" aria-label="Close layers">✕</button>
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="layers" aria-selected="true">Layers</button>
+    <button role="tab" data-tab="list" aria-selected="false">Parts</button>
+  </div>
+  <div data-pane="layers">
+    <h2>Printed</h2>
+    <label class="row"><i class="key" style="background:var(--print)"></i><span class="lbl">Box shell</span><input type="checkbox" data-layer="shell" checked><span class="sw"></span></label>
+    <label class="row"><i class="key" style="background:var(--print)"></i><span class="lbl">Drive shelf</span><input type="checkbox" data-layer="shelf" checked><span class="sw"></span></label>
+    <label class="row"><i class="key" style="background:var(--print)"></i><span class="lbl">Lid</span><input type="checkbox" data-layer="lid" checked><span class="sw"></span></label>
+    <label class="row"><span class="lbl">See-through case</span><input type="checkbox" id="xray" checked><span class="sw"></span></label>
+    <hr>
+    <h2>Inside</h2>
+    <label class="row"><i class="key" style="background:var(--pcb)"></i><span class="lbl">Board &amp; cooler</span><input type="checkbox" data-layer="board" checked><span class="sw"></span></label>
+    <label class="row"><i class="key" style="background:var(--port)"></i><span class="lbl">Port openings</span><input type="checkbox" data-layer="ports" checked><span class="sw"></span></label>
+    <label class="row"><i class="key" style="background:var(--drive)"></i><span class="lbl">Drives &amp; adapters</span><input type="checkbox" data-layer="drives" checked><span class="sw"></span></label>
+    <label class="row"><i class="key" style="background:var(--metal)"></i><span class="lbl">USB hub, power &amp; cable</span><input type="checkbox" data-layer="power" checked><span class="sw"></span></label>
+    <label class="row"><i class="key" style="background:var(--fan)"></i><span class="lbl">Case fans</span><input type="checkbox" data-layer="fans" checked><span class="sw"></span></label>
+    <hr>
+    <div class="row" style="cursor:default"><span class="lbl">Explode</span><span class="seg" id="explodeSeg"></span></div>
+    <label class="row"><span class="lbl">Dimensions</span><input type="checkbox" id="dimsToggle" checked><span class="sw"></span></label>
+    <hr>
+    <details>
+      <summary>Before you print</summary>
+      <ul>
+        <li>Board outline, its 7 screw holes and every port position are estimates. Measure them with calipers and update <code>laptop_case.scad</code>.</li>
+        <li>Measure the USB hub you buy. The cradle assumes about 100 × 30 × 13 mm.</li>
+        <li>The 12 V panel jack hole is 11 mm, which suits most DC-022 jacks.</li>
+        <li>Try the free HDMI test (Display notes) before buying anything for the BIOS screen.</li>
+      </ul>
+    </details>
+    <p class="fine">Printed parts are the real OpenSCAD geometry with every cutout. Components are simple blocks at their planned size and spot.</p>
+  </div>
+  <div data-pane="list" hidden>
+    <div id="plist"></div>
+  </div>
+</aside>
+
+<nav id="views" aria-label="Camera views">
+  <button data-view="overview">Overview</button>
+  <button data-view="exploded">Exploded</button>
+  <button data-view="ports">Ports</button>
+  <button data-view="left">Intake side</button>
+  <button data-view="back">Back</button>
+  <button data-view="top">Top</button>
+  <button data-view="board">Board</button>
+  <button data-view="drives">Drives</button>
+</nav>
+
+<div id="legend" aria-label="Key">
+  <h2>Key</h2>
+  <span><i style="background:var(--print)"></i>3D-printed part</span>
+  <span><i style="background:var(--pcb)"></i>Circuit board</span>
+  <span><i style="background:var(--drive)"></i>Hard drive</span>
+  <span><i style="background:var(--fan)"></i>Fan</span>
+  <span><i style="background:var(--metal)"></i>Hardware</span>
+  <span><i style="background:var(--port)"></i>Port opening</span>
+  <em>Board size, holes and ports are estimates. Measure before printing.</em>
+</div>
+<div id="hint">Drag to orbit · scroll or pinch to zoom · tap anything for details</div>
+<div id="card" role="status" aria-live="polite"><button aria-label="Close details">×</button><span class="cat"></span><h3></h3><div class="dims"></div><p></p><a id="cardDl" class="cardDl" download hidden>Download STL</a></div>
+
+<div id="sheet" role="dialog" aria-modal="true" aria-label="Build notes">
+  <div class="box">
+    <div class="bar">
+      <div class="tabs" role="tablist">
+        <button role="tab" data-doc="cost">Cost</button>
+        <button role="tab" data-doc="parts">Parts</button>
+        <button role="tab" data-doc="display">Display</button>
+        <button role="tab" data-doc="storage">Storage</button>
+        <button role="tab" data-doc="files">Files</button>
+      </div>
+      <button id="closeSheet" aria-label="Close notes">✕</button>
+    </div>
+    <div class="body">
+      <section class="doc" data-docpane="cost"><h1>Cost estimate</h1>
+  <div class="kpis">
+    <div class="kpi"><span class="k">Print it yourself</span><span class="v">Rs 10,300 &#8211; 16,900</span><span class="s">parts, delivery and one 1 kg PLA spool</span></div>
+    <div class="kpi"><span class="k">Print shop</span><span class="v">Rs 35,500 &#8211; 49,300</span><span class="s">parts plus about 700 &#8211; 880 g printed at Rs 40/g</span></div>
+  </div>
+  <p>Prices checked 2026-10-19. Daraz pages mostly hide prices from automated reads, so only two prices below are <strong>confirmed</strong> from a live listing; the rest are <strong>estimates</strong> of typical Daraz Nepal prices for that part. Check the cart total before ordering.</p>
+<h2 id="parts-and-accessories">Parts and accessories</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Qty</th>
+<th>Part</th>
+<th>NPR</th>
+<th>Basis</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>4-port USB 3.0 hub with power input</td>
+<td>1,500 &#8211; 2,500</td>
+<td>estimate</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>USB 3.0 to SATA cable with DC input (2 &#215; 3.5", 1 &#215; 2.5")</td>
+<td>2,100 &#8211; 3,600</td>
+<td>estimate (700 &#8211; 1,200 each)</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>12 V 5 A SMPS adapter, 5.5 &#215; 2.1 mm</td>
+<td>1,350 &#8211; 1,800</td>
+<td><strong>confirmed Rs 1,350</strong> on Daraz (that listing was out of stock)</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>DC splitter, 1 female to 4 male</td>
+<td>200 &#8211; 400</td>
+<td>estimate</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>DC-022 panel-mount jack</td>
+<td>50 &#8211; 150</td>
+<td>estimate</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>12 V to 5 V step-down converter, 3 A+</td>
+<td>400 &#8211; 900</td>
+<td>estimate</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>80 mm 12 V fan (intake)</td>
+<td>300 &#8211; 800</td>
+<td>estimate</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>60 mm 12 V fan (exhaust)</td>
+<td>250 &#8211; 600</td>
+<td>estimate</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>DC male pigtail leads</td>
+<td>150 &#8211; 300</td>
+<td>estimate</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>12 mm momentary push button (10-pack)</td>
+<td>150 &#8211; 400</td>
+<td>estimate</td>
+</tr>
+<tr class="odd">
+<td>1 set</td>
+<td>HDD screws 6-32 + rubber grommets</td>
+<td>200 &#8211; 500</td>
+<td>estimate</td>
+</tr>
+<tr class="even">
+<td>1 set</td>
+<td>M3 screws 8 &#8211; 12 mm</td>
+<td>200 &#8211; 500</td>
+<td>estimate</td>
+</tr>
+<tr class="odd">
+<td>1 pack</td>
+<td>Zip ties</td>
+<td>50 &#8211; 150</td>
+<td>estimate</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Delivery (several Daraz sellers)</td>
+<td>600 &#8211; 1,500</td>
+<td>estimate; overseas-shipped items can add import duty</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td><strong>Parts subtotal</strong></td>
+<td><strong>7,500 &#8211; 14,100</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="3d-printing-shell--shelf--lid">3D printing (shell + shelf + lid)</h2>
+<p>The three parts are about 710 cm&#179; of solid plastic, so roughly <strong>700 &#8211; 880 g of PLA</strong> depending on slicer settings (3 mm walls print almost solid). One 1 kg spool covers it.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Option</th>
+<th>NPR</th>
+<th>Basis</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Your own printer, 1 kg PLA spool</td>
+<td>~2,800</td>
+<td><strong>confirmed Rs 2,800</strong> on <a href="https://www.daraz.com.np/products/pla-filament-1kg-175mm-i105727196.html">Daraz</a> (out of stock when checked)</td>
+</tr>
+<tr class="even">
+<td>Print service, Robotics Association of Nepal</td>
+<td>28,000 &#8211; 35,200</td>
+<td>their published rate: Rs 50/g, Rs 40/g over 100 g (<a href="https://www.ran.org.np/3d-printing-services/">ran.org.np</a>); build volume 30 &#215; 30 &#215; 30 cm fits every part</td>
+</tr>
+</tbody>
+</table>
+<p>PETG instead of PLA is worth considering for the shell: the cooler's exhaust air runs warm and PETG tolerates heat better. Expect a similar spool price (estimate).</p>
+<h2 id="totals">Totals</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Scenario</th>
+<th>NPR</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Parts + your own filament</td>
+<td><strong>~10,300 &#8211; 16,900</strong></td>
+</tr>
+<tr class="even">
+<td>Parts + print service</td>
+<td><strong>~35,500 &#8211; 49,300</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Not included: the hard drives themselves, and anything for BIOS display (a spare 15.6" eDP panel or an eDP-to-DP adapter, only if the free HDMI test fails).</p>
+<p>At the print-service rate the printing costs more than all the parts together. A local makerspace or a friend's printer is worth asking; most shops quote lower on large, simple prints if you ask for a per-hour or bulk price.</p></section>
+      <section class="doc" data-docpane="parts" hidden>
+        <h1>Parts to buy</h1>
+        <p class="lede">All from Daraz Nepal. "Daraz search" means no single listing was confirmed, so the link opens a search for that spec. Wiring: 12 V brick, panel jack, 1-to-4 splitter, then each 3.5" adapter, both fans and the 5 V converter for the hub. The hub's USB cable goes out the slot to the board's right USB-A port.</p>
+        <div class="bom" id="bom"></div>
+      </section>
+      <section class="doc" data-docpane="display" hidden><h1>Display: HDMI and the BIOS screen</h1>
+  <p class="lede">HDMI out is in the right wall at board level, between the 19.5 V charger jack and USB-C. It works normally once Windows or Linux starts. The open question is only the BIOS screen.</p>
+  <h2 id="getting-a-picture-on-an-external-monitor">Getting a picture on an external monitor</h2>
+<ul>
+<li>Once Windows/Linux loads, the board's own <strong>HDMI port works normally</strong>; the problem is only pre-OS (BIOS/POST) output going to the internal panel.</li>
+<li><strong>First test (free):</strong> unplug the internal display ribbon completely at the board and boot with HDMI connected. On many laptops POST falls back to HDMI when no internal panel is detected. You said the BIOS shows only on the ribbon; if that was with the broken panel still attached, try it fully disconnected.</li>
+<li><strong>Cheapest reliable fix:</strong> plug in any working 15.6" FHD 30-pin eDP panel (used/cracked-glass panels are cheap) just for BIOS setup. Set boot order and "power on AC" once, then run the board on HDMI.</li>
+<li><strong>eDP to DP adapter:</strong> eDP uses DisplayPort signalling (same lanes, AUX channel and hot-plug pin), so a 30-pin eDP to DisplayPort breakout board can drive a regular DP monitor. They're sold for exactly this use (search "30pin eDP to DP adapter"). Caveats: the eDP connector carries panel and backlight power that must not reach the monitor, and some boards/monitors don't negotiate the link. Treat it as likely-but-not-guaranteed (inferred from the standards, not tested on this board). If you go this route, the case needs a DP cutout for it.</li>
+<li>Not a fix: eDP to <strong>HDMI</strong> needs an active converter chip, so a DP-out breakout plus a DP monitor (or a DP-to-HDMI active adapter) is simpler.</li>
+</ul>
+<p>Sources: HP spec sheet you shared; HP m6-aq0xx/aq1xx service guide (<a href="https://manualsnet.com/hp/envy-15-aq000-x360);">https://manualsnet.com/hp/envy-15-aq000-x360);</a> forum reports on board-only BIOS output (<a href="https://community.frame.work/t/can-the-bios-on-a-board-only-set-up-be-viewed-on-a-secondary-monitor/84540">https://community.frame.work/t/can-the-bios-on-a-board-only-set-up-be-viewed-on-a-secondary-monitor/84540</a>, <a href="https://smallformfactor.net/forum/threads/possible-bios-vbios-issue-with-laptop-i-want-to-turn-it-into-a-mini-sff-pc-but-due-to-a-manufacturer-problem-it-doesnt-output-properly.19772/latest">https://smallformfactor.net/forum/threads/possible-bios-vbios-issue-with-laptop-i-want-to-turn-it-into-a-mini-sff-pc-but-due-to-a-manufacturer-problem-it-doesnt-output-properly.19772/latest</a>).</p></section>
+      <section class="doc" data-docpane="storage" hidden><h1>Storage expansion</h1>
+  <p class="lede">The research behind the drive shelf. The route you chose is section 6: drives inside the box on USB-to-SATA adapters through a powered hub.</p>
+  <p>Platform checked against the HP service guide: Intel i5-7200U (Kaby Lake, 15 W), mainboard <strong>15257-2N / 448.07N07.002N</strong>, 45 W HP Smart adapter (19.5 V), one 2.5" SATA bay on a flex cable (HP part <strong>856788-001</strong>), M.2 2280 SSD slot (you already boot NVMe from it), Intel 7265 Wi-Fi card (M.2 2230, A/E key). No Ethernet port on this laptop.</p>
+<h2 id="1-swap-the-ribbon-for-a-real-sata-port-no-soldering-needed">1. "Swap the ribbon for a real SATA port": no soldering needed</h2>
+<p>The board-side connector is a ZIF flex connector (the black latch, "purple tag" cable in iFixit's guide). The flex cable <strong>already ends in a standard 22-pin SATA plug</strong> (7-pin data + 15-pin power) that the 2.5" drive pushes onto.</p>
+<ul>
+<li><strong>Do:</strong> keep the HP cable plugged into the board and add a <strong>SATA 22-pin (7+15) male-to-female extension cable</strong> (about 20-30 cm). The far end is a normal SATA socket you can mount in the case or plug any 2.5" drive into. If the HP cable is lost, buy 856788-001 (cheap on eBay/AliExpress).</li>
+<li><strong>Don't:</strong> desolder the ZIF connector to fit a desktop 7-pin header. The flex carries the drive's 5 V power too, the pinout isn't published, and hand-wired high-speed SATA lanes tend to give link errors.</li>
+<li><strong>Limit:</strong> that port only supplies <strong>5 V, no 12 V</strong>, so it runs one 2.5" drive (HDD or SSD). A 3.5" drive on it needs a separate 12 V + 5 V supply with grounds tied together. One port only; SATA port multipliers are unsupported on Intel AHCI controllers, so they won't add drives.</li>
+</ul>
+<h2 id="2-adding-several-hdds-best-first">2. Adding several HDDs (best first)</h2>
+<p><strong>A. External multi-bay USB enclosure (recommended).</strong> A 2- or 4-bay 3.5" enclosure with its own power brick (UASP, "JBOD"/single-disk mode, not hardware RAID) on one USB-A 3.1 Gen 1 port. 5 Gbps shared is far more than media streaming needs. Zero board risk and the drives' power is completely off the laptop's 45 W adapter. Pool with mergerfs + SnapRAID (good fit for media), or plain separate disks.</p>
+<p><strong>B. Move the OS to the SATA bay, use the M.2 slot for a SATA controller.</strong> Put the OS on a 2.5" SATA SSD on the HP cable, then fit an <strong>M.2 M-key to 5x SATA card (JMB585 chip)</strong> in the 2280 slot. Gives 5 native SATA ports inside the case. Needs: a separate PSU for the drives (an ATX/SFX PSU or a 12 V brick + 12 V-to-5 V board), short SATA cables routed out of the board area. Inferred: the slot is PCIe since your NVMe drive works; I couldn't confirm its lane count, and the JMB585 is fine on x2 or x4.</p>
+<p><strong>C. Wi-Fi slot to SATA.</strong> An <strong>M.2 A+E key to 2x SATA adapter (ASM1061 or JMB582)</strong> in place of the Wi-Fi card. Adds 2 ports and keeps the NVMe for the OS. You lose Wi-Fi, which you'd want to replace with a USB 3 gigabit Ethernet dongle anyway. Risks (inferred, not tested on this board): some HP BIOSes whitelist Wi-Fi cards and refuse to boot, and that slot is only PCIe x1. Try it before designing the case around it.</p>
+<p><strong>Ethernet:</strong> whichever you pick, a USB 3 gigabit Ethernet adapter (Realtek RTL8153 or similar) on the other USB-A port; Wi-Fi is a poor link for a media server.</p>
+<h2 id="3-unpopulated-pads-worth-soldering">3. Unpopulated pads worth soldering</h2>
+<p>I couldn't find a public schematic or boardview for 15257-2N, so I can't name specific footprints. Things to know:</p>
+<ul>
+<li>Kaby Lake-U's extra SATA/PCIe lanes only exist on the board if HP routed traces to a footprint; if they did, they'd be for a second M.2 or SATA connector. A missing connector usually also lacks its AC-coupling capacitors and power parts, so it's a rework job, not just a connector.</li>
+<li>Debug headers on HP boards are for EC/BIOS flashing, not useful for storage.</li>
+<li>If you post clear, well-lit photos of <strong>both sides</strong> of the board, I'll mark any empty connector footprints and say whether they look complete.</li>
+</ul>
+<h2 id="4-power-budget">4. Power budget</h2>
+<p>The board is ~10-15 W at idle and ~30 W under load out of a 45 W adapter. One 2.5" HDD (~2.5 W, ~5 W spin-up) on the internal port is fine. Any 3.5" drives (~6-8 W each, ~25 W at spin-up) must be on their own supply (options A/B/C all assume this).</p>
+<h2 id="5-what-the-case-needs-for-the-case-thread">5. What the case needs (for the case thread)</h2>
+<ul>
+<li><strong>Option A:</strong> nothing internal; vents and USB clearance only. Optional slot for a 2.5" drive on the HP cable: 100 x 69.85 x 9.5 mm (7 mm drives fit too), M3 screws, standard SFF-8201 hole pattern (check against the real drive with calipers).</li>
+<li><strong>Option B/C:</strong> 3.5" bays at 147 x 101.6 x 26.1 mm per drive, 6-32 UNC screws on the standard SFF-8301 pattern (check against the real drive), at least 10 mm air gap between drives with a fan across them, a panel cutout for the drive PSU input (IEC C14 or barrel jack), and a cable path 10 mm wide from the M.2 area to the bays.</li>
+<li>A 2.5" SATA socket mount for the extension cable end, if the boot SSD sits outside the original bay position.</li>
+</ul>
+<h2 id="sources">Sources</h2>
+<ul>
+<li>HP ENVY x360 m6-aq0xx/aq1xx service guide: <a href="https://manualsnet.com/hp/envy-15-aq000-x360">https://manualsnet.com/hp/envy-15-aq000-x360</a></li>
+<li>iFixit, m6-aq103dx hard drive replacement: <a href="https://kiwix.colibox.colibris-outilslibres.org/ifixit_fr_all_2022-08/C/Tutoriel/HP%2BEnvy%2Bx360%2Bm6-aq103dx%2BHard%2Bdrive%2BReplacement/98654">https://kiwix.colibox.colibris-outilslibres.org/ifixit_fr_all_2022-08/C/Tutoriel/HP%2BEnvy%2Bx360%2Bm6-aq103dx%2BHard%2Bdrive%2BReplacement/98654</a></li>
+<li>HP forum on the 15-aq M.2 slot (SATA vs NVMe): <a href="https://h30434.www3.hp.com/t5/Notebook-Hardware-and-Upgrade-Questions/adding-SSD/m-p/9648643">https://h30434.www3.hp.com/t5/Notebook-Hardware-and-Upgrade-Questions/adding-SSD/m-p/9648643</a></li>
+<li>Board part number: <a href="https://www.gotlaptopparts.com/products/hp-envy-x360-m6-aq103dx-15-6-intel-i5-7200u-2-5ghz-motherboard-448-07n07-002n">https://www.gotlaptopparts.com/products/hp-envy-x360-m6-aq103dx-15-6-intel-i5-7200u-2-5ghz-motherboard-448-07n07-002n</a></li>
+</ul>
+<h2 id="6-chosen-route-user-2026-10-19-usb-drives-inside-the-case">6. Chosen route (user, 2026-10-19): USB, drives inside the case</h2>
+<p>A short USB 3 cable leaves a board USB-A port on the outside and comes back in through a hole into an HDD section of the case. Defaults picked (change if you like): <strong>2 x 3.5" HDDs</strong>, room left for a 3rd and 4th later, each drive on a powered <strong>USB 3 to SATA adapter (UASP)</strong> or one multi-bay USB-SATA bridge board, all powered from one <strong>12 V 5 A brick</strong>, never from the laptop adapter.</p>
+<p>Bay requirements for the case:</p>
+<ul>
+<li><strong>Drive cradles:</strong> 147 x 101.6 x 26.1 mm per 3.5" drive, held by 4 x 6-32 UNC side screws (SFF-8301 side holes; check with calipers) with rubber grommets for vibration. Drives on edge or flat, 10 mm air gap between them.</li>
+<li><strong>Airflow:</strong> one 80 or 92 mm fan blowing across the drives, separate from the board's own vents; the drive section can be partitioned from the board section.</li>
+<li><strong>USB re-entry:</strong> a 15 x 10 mm pass-through slot or grommet near the HDD section, close to the board's USB-A port so the outside loop is short (under 30 cm). A strain-relief clip inside.</li>
+<li><strong>Bridge/adapter mount:</strong> a flat spot with M2.5/M3 standoffs for the USB-SATA adapter board(s), or a USB 3 hub if using one adapter per drive.</li>
+<li><strong>Power:</strong> a 5.5 x 2.1 mm DC barrel jack panel hole (about 8 mm) for the 12 V brick, plus room for a small 12 V to 5 V buck board and a SATA power splitter.</li>
+<li><strong>Printer size:</strong> two 3.5" drives side by side add roughly 120 x 160 mm of footprint; the HDD section may need to print as a separate module that bolts onto the board case.</li>
+</ul>
+<p><strong>Clarified (user, 2026-10-19): one USB-to-SATA adapter cable per drive.</strong></p>
+<ul>
+<li>2.5" drives: plain bus-powered USB 3 to SATA cables are fine, one per USB port.</li>
+<li>3.5" drives: the adapter must be the kind with a 12 V barrel input. Feed all of them from one 12 V 5 A brick through a 5.5 x 2.1 mm splitter rather than one brick each.</li>
+<li>Ports: the board has 2x USB-A + 1x USB-C, and one will go to Ethernet. With more than 2 drives, put a powered USB 3 hub (UASP-friendly, e.g. VIA VL817 or Genesys GL3523) inside the HDD section, so only one cable loops out and back in. The case then needs a mount for the hub instead of a bridge board.</li>
+<li>Adapter bodies need about 60 mm of clearance behind each drive's SATA connector for the plug, the adapter body and the cable bend.</li>
+</ul></section>
+      <section class="doc" data-docpane="files" hidden>
+        <h1>Files</h1>
+        <p class="lede">Tap a file to download it. The .3mf opens in Bambu Studio, PrusaSlicer, OrcaSlicer and Cura with all three parts ready to slice; each part needs its own plate on a 256 mm bed. Everything is also in the <a href="https://github.com/duhbinci/envy-media-server-case" target="_blank" rel="noopener">GitHub repository</a>, or <a href="https://github.com/duhbinci/envy-media-server-case/archive/refs/heads/main.zip">download it all as a zip</a>.</p>
+        <h2>Everything at once</h2>
+        <div class="files">
+          <a class="file" href="case/envy_media_server_case.3mf" download><code>envy_media_server_case.3mf</code><span>All three parts in one slicer project file (shell, shelf, lid), in millimetres.</span><b>Download</b></a>
+          <a class="file" href="case/envy_media_server_case_print_files.zip" download><code>envy_media_server_case_print_files.zip</code><span>The 3 STLs, the .3mf and the OpenSCAD source in one zip, about 400 KB.</span><b>Download</b></a>
+        </div>
+        <h2>One part at a time (STL)</h2>
+        <div class="files">
+          <a class="file" href="case/stl/shell.stl" download><code>shell.stl</code><span>Box shell, 250 × 160 × 141 mm. Prints upright in one piece, no supports.</span><b>Download</b></a>
+          <a class="file" href="case/stl/shelf.stl" download><code>shelf.stl</code><span>Removable drive shelf, 243 × 153 mm.</span><b>Download</b></a>
+          <a class="file" href="case/stl/lid.stl" download><code>lid.stl</code><span>Vented lid, already flipped flat side down.</span><b>Download</b></a>
+        </div>
+        <h2>Design and notes</h2>
+        <div class="files">
+          <a class="file" href="laptop_case.scad" download><code>laptop_case.scad</code><span>OpenSCAD source for all three parts. Every [MEASURE] value is an estimate to replace with your caliper numbers.</span><b>Download</b></a>
+          <a class="file ext" href="https://github.com/duhbinci/envy-media-server-case/blob/main/case/parts_list.md" target="_blank" rel="noopener"><code>case/parts_list.md</code><span>The Parts notes as a file.</span><b>GitHub</b></a>
+          <a class="file ext" href="https://github.com/duhbinci/envy-media-server-case/blob/main/case/cost_estimate.md" target="_blank" rel="noopener"><code>case/cost_estimate.md</code><span>The Cost notes as a file.</span><b>GitHub</b></a>
+          <a class="file ext" href="https://github.com/duhbinci/envy-media-server-case/blob/main/storage/storage_expansion.md" target="_blank" rel="noopener"><code>storage/storage_expansion.md</code><span>The Storage research as a file.</span><b>GitHub</b></a>
+          <a class="file ext" href="https://github.com/duhbinci/envy-media-server-case/blob/main/validation/case_validation.md" target="_blank" rel="noopener"><code>validation/case_validation.md</code><span>First review of the original design, plus the display options.</span><b>GitHub</b></a>
+        </div>
+        <h2>Before you print</h2>
+        <ul>
+          <li>Measure the board outline and its 7 screw holes, and each port's position and size. These are estimates in the model now.</li>
+          <li>Measure the USB hub you buy. The cradle assumes about 100 × 30 × 13 mm.</li>
+          <li>Check the panel jack's thread. The hole is 11 mm, which suits most DC-022 jacks.</li>
+          <li>Try the free HDMI test from the Display notes before buying anything for the BIOS screen.</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script id="data" type="application/json">{"comps": [{"id": "board", "label": "Mainboard", "x": 5.0, "y": 45.4, "z": 9.0, "sx": 240.0, "sy": 110.0, "sz": 1.2, "kind": "pcb", "group": "case", "note": "i5-7200U board on 7 M2 standoffs on the lower floor, pushed against the back wall. Outline and holes are estimates until measured.", "floor": "lower"}, {"id": "io", "label": "IO daughterboard", "x": 4.0, "y": 57.4, "z": 9.0, "sx": 24.0, "sy": 60.0, "sz": 1.0, "kind": "pcb", "group": "case", "note": "Left-side USB-A and audio jack, flat cable to the mainboard.", "floor": "lower"}, {"id": "fan", "label": "Stock blower fan", "x": 155.0, "y": 75.4, "z": 10.2, "sx": 62.0, "sy": 60.0, "sz": 8.0, "kind": "fan", "group": "case", "note": "Stock cooler fan, blows into the fin stack at the back wall.", "floor": "lower"}, {"id": "fins", "label": "Cooler fin stack", "x": 201.0, "y": 141.4, "z": 10.2, "sx": 40.0, "sy": 14.0, "sz": 8.0, "kind": "metal", "group": "case", "note": "Exhausts through the grille in the back wall.", "floor": "lower"}, {"id": "pipe", "label": "Heat pipe", "x": 115.0, "y": 105.4, "z": 10.2, "sx": 40.0, "sy": 8.0, "sz": 3.0, "kind": "metal", "group": "case", "note": "Copper heat pipe from the CPU to the fin stack.", "floor": "lower"}, {"id": "port0", "label": "USB-A (left)", "x": -0.5, "y": 65.4, "z": 10.7, "sx": 6.0, "sy": 14.5, "sz": 7.0, "kind": "port", "group": "case", "note": "USB-A (left) opening in the left wall, 14.5 x 7 mm.", "floor": "lower"}, {"id": "port1", "label": "Audio jack", "x": -0.5, "y": 93.4, "z": 11.7, "sx": 6.0, "sy": 7.0, "sz": 7.0, "kind": "port", "group": "case", "note": "Audio jack opening in the left wall, 7 x 7 mm.", "floor": "lower"}, {"id": "port2", "label": "19.5 V charger jack", "x": 244.5, "y": 53.4, "z": 11.2, "sx": 6.0, "sy": 11.0, "sz": 11.0, "kind": "port", "group": "case", "note": "19.5 V charger jack opening in the right wall, 11 x 11 mm.", "floor": "lower"}, {"id": "port3", "label": "HDMI out", "x": 244.5, "y": 71.4, "z": 10.2, "sx": 6.0, "sy": 16.0, "sz": 7.0, "kind": "port", "group": "case", "note": "HDMI out opening in the right wall, 16 x 7 mm. Plug your monitor in here. It works once Windows or Linux has started; the BIOS screen may only show on the laptop's internal display connector.", "floor": "lower"}, {"id": "port4", "label": "USB-C", "x": 244.5, "y": 93.4, "z": 10.7, "sx": 6.0, "sy": 10.0, "sz": 4.5, "kind": "port", "group": "case", "note": "USB-C opening in the right wall, 10 x 4.5 mm.", "floor": "lower"}, {"id": "port5", "label": "USB-A (right)", "x": 244.5, "y": 109.4, "z": 10.2, "sx": 6.0, "sy": 14.5, "sz": 7.0, "kind": "port", "group": "case", "note": "USB-A (right) opening in the right wall, 14.5 x 7 mm.", "floor": "lower"}, {"id": "port6", "label": "SD card slot", "x": 244.5, "y": 129.4, "z": 10.2, "sx": 6.0, "sy": 25.0, "sz": 4.0, "kind": "port", "group": "case", "note": "SD card slot opening in the right wall, 25 x 4 mm.", "floor": "lower"}, {"id": "dcjack", "label": "DC jack (19.5 V)", "x": 233.0, "y": 51.9, "z": 9.2, "sx": 14.0, "sy": 14.0, "sz": 14.0, "kind": "metal", "group": "case", "note": "Laptop charger input on its pigtail, panel-mounted in the right wall.", "floor": "lower"}, {"id": "button", "label": "Power button", "x": 35.0, "y": 2.0, "z": 8.2, "sx": 12.0, "sy": 20.0, "sz": 12.0, "kind": "metal", "group": "case", "note": "12 mm momentary switch in the front wall, wired to the board's power-button pads.", "floor": "lower"}, {"id": "hdd1", "label": "3.5\" HDD 1", "x": 29.0, "y": 13.0, "z": 35.7, "sx": 147.0, "sy": 26.1, "sz": 101.6, "kind": "drive", "group": "shelf", "note": "147 x 101.6 x 26.1 mm, on edge. 2 screws up through grommets in the shelf, clamped at the top by the lid ribs.", "floor": "upper"}, {"id": "adp1", "label": "USB-SATA adapter 1", "x": 176.0, "y": 16.0, "z": 43.7, "sx": 48.0, "sy": 20.0, "sz": 14.0, "kind": "pcb", "group": "shelf", "note": "Adapter with 12 V input, plugged into the drive's SATA connector. Needs the 60 mm gap.", "floor": "upper"}, {"id": "hdd2", "label": "3.5\" HDD 2", "x": 29.0, "y": 49.1, "z": 35.7, "sx": 147.0, "sy": 26.1, "sz": 101.6, "kind": "drive", "group": "shelf", "note": "147 x 101.6 x 26.1 mm, on edge. 2 screws up through grommets in the shelf, clamped at the top by the lid ribs.", "floor": "upper"}, {"id": "adp2", "label": "USB-SATA adapter 2", "x": 176.0, "y": 52.1, "z": 43.7, "sx": 48.0, "sy": 20.0, "sz": 14.0, "kind": "pcb", "group": "shelf", "note": "Adapter with 12 V input, plugged into the drive's SATA connector. Needs the 60 mm gap.", "floor": "upper"}, {"id": "ssd3", "label": "2.5\" drive (bay 3)", "x": 76.0, "y": 85.2, "z": 35.7, "sx": 100.0, "sy": 9.5, "sz": 69.85, "kind": "drive", "group": "shelf", "note": "100 x 69.85 x 7-15 mm, on edge in a normal bay, 2 M3 screws up through the shelf. USB powered, no 12 V needed.", "floor": "upper"}, {"id": "adp3", "label": "USB-SATA cable 3", "x": 176.0, "y": 86.2, "z": 41.7, "sx": 40.0, "sy": 14.0, "sz": 10.0, "kind": "pcb", "group": "shelf", "note": "Plain bus-powered USB 3 to SATA cable for the 2.5\" drive.", "floor": "upper"}, {"id": "bay4", "label": "Empty bay 4", "x": 29.0, "y": 121.3, "z": 35.7, "sx": 147.0, "sy": 26.1, "sz": 101.6, "kind": "empty", "group": "shelf", "note": "Room for another 3.5\" drive later.", "floor": "upper"}, {"id": "hub", "label": "Powered USB 3 hub", "x": 231.0, "y": 29.0, "z": 83.2, "sx": 13.0, "sy": 100.0, "sz": 30.0, "kind": "pcb", "group": "case", "note": "Cased 4-port hub in a cradle on the right wall: ledge, end stops and two zip ties. Its own cable goes out the slot to the board's USB-A port.", "floor": "upper"}, {"id": "cagefan", "label": "80 mm intake fan", "x": 4.0, "y": 40.2, "z": 46.5, "sx": 25.0, "sy": 80.0, "sz": 80.0, "kind": "fan", "group": "case", "note": "12 V fan in the left wall of the upper floor, pulls air in across the drives.", "floor": "upper"}, {"id": "exfan", "label": "60 mm exhaust fan", "x": 177.0, "y": 132.4, "z": 74.8, "sx": 60.0, "sy": 25.0, "sz": 60.0, "kind": "fan", "group": "case", "note": "12 V fan screwed to the inside of the back wall, high up above the drive adapters. Pushes warm air out the back.", "floor": "upper"}, {"id": "dc12", "label": "12 V input jack", "x": 235.0, "y": 129.4, "z": 51.2, "sx": 14.0, "sy": 12.0, "sz": 12.0, "kind": "metal", "group": "case", "note": "5.5 x 2.1 mm panel jack for the 12 V 5 A brick. Inside, a 1-to-4 splitter feeds the 3.5\" adapters, both fans and the hub's 5 V converter.", "floor": "upper"}, {"id": "buck", "label": "12 V to 5 V converter", "x": 225.0, "y": 39.0, "z": 117.2, "sx": 18.0, "sy": 40.0, "sz": 10.0, "kind": "pcb", "group": "case", "note": "Small buck board that powers the hub from the same 12 V brick. Sits on top of the hub cradle, stuck down with foam tape.", "floor": "upper"}], "prints": [{"id": "shell", "label": "Box shell", "dims": "250 \u00d7 160.4 \u00d7 141.3 mm", "foot": "250 \u00d7 160.4 mm", "fit": "ok", "note": "The one box. Lower floor: board standoffs, every side port, power button hole, floor vents, cooler exhaust grille. A ledge all round carries the drive shelf. Upper floor: intake fan in the left wall, exhaust fan on the back, USB slot, 12 V jack and the hub cradle on the right wall. Prints upright in one piece, no supports."}, {"id": "shelf", "label": "Drive shelf", "dims": "243 \u00d7 153.4 \u00d7 3 mm", "foot": "243 \u00d7 153.4 mm", "fit": "ok", "note": "Removable floor between the board and the drives. 4 bays with ribs between them, slotted screw holes for 3.5\" drives (6-32, with grommets) and 2.5\" drives (M3), and air slots under the adapters. Screw the drives on, then drop it onto the ledge."}, {"id": "lid", "label": "Lid", "dims": "250 \u00d7 160.4 \u00d7 3 mm", "foot": "250 \u00d7 160.4 mm", "fit": "ok", "note": "Vented top, 4 countersunk M3 screws into the corner bosses. Ribs underneath drop between the drive tops so the drives can't rock. Prints flat-face down."}], "loop": [250.0, 116.65, 13.7, 250.0, 116.65, 54.2], "bom": [{"qty": "1", "name": "4-port USB 3.0 hub with power input", "url": "https://www.daraz.com.np/products/high-speed-usb-hub-4-port-usb-30-adapter-with-power-supply-otg-extension-for-laptop-macbook-pc-computer-usb-30-hub-i130007574.html", "why": "The USB splitter. Sits in the cradle; its cable loops out to the board. Pick one about 100 \u00d7 30 \u00d7 13 mm, or change hub_size in the file."}, {"qty": "3", "name": "USB 3.0 to SATA cable with DC power input", "url": "https://www.daraz.com.np/products/sata-to-usb-30-2535-hdd-ssd-hard-drive-converter-cable-line-adapter-i105951468.html", "why": "One per drive. 3.5\" drives take 12 V into its DC input from the splitter; 2.5\" drives run on USB power alone."}, {"qty": "1", "name": "12 V 5 A SMPS power adapter (5.5 \u00d7 2.1 mm)", "url": "https://www.daraz.com.np/products/multipurpose-12v-5a-60w-smps-dc-power-supply-for-cctv-led-i103524332.html", "why": "The one brick for drives, fans and hub. Separate from the laptop charger."}, {"qty": "1", "name": "DC power splitter, 1 female to 4 male, 5.5 \u00d7 2.1 mm", "url": "https://www.daraz.com.np/catalog/?q=dc+power+splitter+1+to+4+5.5x2.1", "search": true, "why": "Inside the box: jack to each 3.5\" adapter, the fans and the 5 V converter. Get a 1-to-5 or two of them for 4 drives."}, {"qty": "1", "name": "DC-022 panel-mount jack, 5.5 \u00d7 2.1 mm", "url": "https://www.daraz.com.np/catalog/?q=dc+022+dc+jack+panel", "search": true, "why": "Goes in the 11 mm hole in the right wall. Check yours; if its thread is smaller, change dc12_d."}, {"qty": "1", "name": "12 V to 5 V step-down converter (3 A or more)", "url": "https://www.daraz.com.np/products/rcnun-12v-24v-to-5v-3a-5a-10a-step-down-dc-dc-converter-regulator-50w-24-12-volt-buck-to-5-volt-led-power-supply-for-cars-i464614289.html", "why": "Powers the hub from the 12 V brick, so you need only one wall plug. Skip it if you'd rather use the hub's own adapter."}, {"qty": "1", "name": "80 mm 12 V fan (intake)", "url": "https://www.daraz.com.np/catalog/?q=80mm+12v+cooling+fan", "search": true, "why": "Left wall, pulls air across the drives. 80 \u00d7 80 \u00d7 25 mm, 71.5 mm screw spacing."}, {"qty": "1", "name": "60 mm 12 V fan (exhaust)", "url": "https://www.daraz.com.np/catalog/?q=60mm+12v+cooling+fan", "search": true, "why": "Inside the back wall, high up above the adapters, pushes warm air out. 50 mm screw spacing."}, {"qty": "3", "name": "DC 5.5 \u00d7 2.1 mm male pigtail leads", "url": "https://www.daraz.com.np/catalog/?q=dc+male+pigtail+5.5x2.1+cable", "search": true, "why": "To wire the two fans and the 5 V converter onto the splitter."}, {"qty": "1", "name": "12 mm momentary push button", "url": "https://www.daraz.com.np/products/black-10x-pcs-12mm-waterproof-momentary-onoff-push-button-round-spst-switch-i128398424-s1035877039.html", "why": "Front-wall power button, wired to the board's power-button pads. Must be momentary, not latching."}, {"qty": "1 set", "name": "HDD screws (6-32) and rubber grommets", "url": "https://www.daraz.com.np/catalog/?q=hdd+screw+set+6-32", "search": true, "why": "2 per 3.5\" drive through the shelf. The set usually includes M3 screws for 2.5\" drives too."}, {"qty": "1 set", "name": "M3 screws, 8 to 12 mm", "url": "https://www.daraz.com.np/catalog/?q=m3+screw+set", "search": true, "why": "4 for the lid, 8 for the fans. The board reuses its original HP M2 screws."}, {"qty": "1 pack", "name": "Small zip ties", "url": "https://www.daraz.com.np/catalog/?q=zip+ties+small", "search": true, "why": "Two hold the hub in its cradle, one holds the hub cable at the slot."}], "case": {"l": 250.0, "w": 160.4, "h": 141.3, "shelf": 32.2}}</script>
+<script>
+// If the 3D engine can't load (offline, CDN blocked), say so instead of hanging on the loader.
+setTimeout(() => { const l = document.getElementById('loader'); if (l && !l.classList.contains('done')) l.textContent = 'Could not load the 3D engine — check your connection and reload.'; }, 12000);
+</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+
+/* ------------------------------------------------------------------
+   Units: 1 unit = 1 mm, z up. Origin = front-left-bottom outer corner of
+   the box shell. +x runs to the right wall (ports), +y to the back wall.
+   Geometry and component positions come from laptop_case.scad.
+------------------------------------------------------------------- */
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = id => document.getElementById(id);
+const isSmall = matchMedia('(max-width:760px)').matches;
+const CASE = D.case, C = new THREE.Vector3(CASE.l / 2, CASE.w / 2, CASE.h / 2);
+
+// ---------- renderer / scene ----------
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+$('scene').appendChild(renderer.domElement);
+
+const BG = new THREE.Color('#f5f3ef');
+const scene = new THREE.Scene();
+scene.background = BG;
+scene.fog = new THREE.Fog(BG, 1800, 3600);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.55;
+
+const camera = new THREE.PerspectiveCamera(isSmall ? 50 : 40, innerWidth / innerHeight, 2, 8000);
+camera.up.set(0, 0, 1);
+const orbit = new OrbitControls(camera, renderer.domElement);
+orbit.enableDamping = true;
+orbit.dampingFactor = 0.08;
+orbit.maxPolarAngle = Math.PI * 0.495;
+orbit.minDistance = 120;
+orbit.maxDistance = 2200;
+
+const hemi = new THREE.HemisphereLight(0xfff7ec, 0xb9b1a4, 0.9); hemi.position.set(0, 0, 1); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff1dc, 2.4);
+sun.position.set(C.x - 260, C.y - 360, 620);
+sun.target.position.copy(C).setZ(0);
+sun.castShadow = true;
+sun.shadow.mapSize.setScalar(isSmall ? 1024 : 2048);
+Object.assign(sun.shadow.camera, { left: -420, right: 420, top: 420, bottom: -420, near: 50, far: 1600 });
+sun.shadow.bias = -0.0004;
+sun.shadow.normalBias = 0.6;
+scene.add(sun, sun.target);
+
+// ground: soft shadow catcher plus a faint print-bed outline
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), new THREE.ShadowMaterial({ opacity: 0.16 }));
+ground.position.set(C.x, C.y, -0.6); ground.receiveShadow = true; scene.add(ground);
+const mat = new THREE.Mesh(new THREE.PlaneGeometry(CASE.l + 160, CASE.w + 160), new THREE.MeshStandardMaterial({ color: 0xebe7e0, roughness: 1 }));
+mat.position.set(C.x, C.y, -1); mat.receiveShadow = true; scene.add(mat);
+
+// ---------- groups ----------
+// explode containers: shelf and drives lift together, the lid lifts higher
+const base = new THREE.Group(), shelfLift = new THREE.Group(), lidLift = new THREE.Group();
+scene.add(base, shelfLift, lidLift);
+
+const COLORS = { pcb: 0x2f7d4f, drive: 0x8c949b, fan: 0x30363c, metal: 0xb87333, empty: 0x7b8a94, print: 0xe6e1d8, port: 0x2f6fb3 };
+const KIND_LABEL = { pcb: 'Circuit board', drive: 'Hard drive', fan: 'Fan', metal: 'Hardware', empty: 'Empty bay', print: '3D-printed part', port: 'Port opening' };
+const LAYER_OF = id =>
+  /^port\d/.test(id) ? 'ports' :
+  ['board', 'io', 'fan', 'fins', 'pipe', 'button', 'dcjack'].includes(id) ? 'board' :
+  ['hdd1', 'hdd2', 'ssd3', 'bay4', 'adp1', 'adp2', 'adp3'].includes(id) ? 'drives' :
+  ['cagefan', 'exfan'].includes(id) ? 'fans' : 'power';
+const STATUS = { button: 'std', hdd1: 'std', hdd2: 'std', ssd3: 'std', bay4: 'std', cagefan: 'std', exfan: 'std', dc12: 'std' };
+
+const items = [];      // { id, info, obj, layer, print }
+const pickables = [];
+function register(obj, info, layer, print = false) {
+  obj.userData.info = info;
+  obj.traverse(o => { if (o.isMesh) { o.castShadow = !print; o.receiveShadow = true; } });
+  if (print) { obj.castShadow = true; }
+  items.push({ id: info.id, info, obj, layer, print });
+  pickables.push(obj);
+}
+
+for (const c of D.comps) {
+  const parent = c.group === 'shelf' ? shelfLift : base;
+  const geo = new THREE.BoxGeometry(c.sx, c.sy, c.sz);
+  const color = COLORS[c.kind] ?? COLORS.metal;
+  let m;
+  if (c.kind === 'empty') {
+    m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.1, depthWrite: false }));
+    m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineDashedMaterial({ color, dashSize: 4, gapSize: 3 })));
+    m.children[0].computeLineDistances();
+  } else {
+    m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+      color, roughness: c.kind === 'drive' ? 0.35 : 0.6,
+      metalness: c.kind === 'drive' || c.kind === 'metal' ? 0.55 : 0.05,
+      transparent: c.kind === 'port', opacity: c.kind === 'port' ? 0.85 : 1,
+    }));
+  }
+  m.position.set(c.x + c.sx / 2, c.y + c.sy / 2, c.z + c.sz / 2);
+  if (c.kind === 'drive') {   // darker PCB strip on the drive's connector end
+    const strip = new THREE.Mesh(new THREE.BoxGeometry(1, c.sy * 0.7, c.sz * 0.6), new THREE.MeshStandardMaterial({ color: 0x1f5a3a }));
+    strip.position.set(c.sx / 2 + 0.5, -c.sy * 0.1, 0); m.add(strip);
+  }
+  if (c.kind === 'fan') {
+    const thin = c.sx <= c.sy && c.sx <= c.sz ? 'x' : c.sy <= c.sz ? 'y' : 'z';
+    const face = thin === 'x' ? Math.min(c.sy, c.sz) : thin === 'y' ? Math.min(c.sx, c.sz) : Math.min(c.sx, c.sy);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(face * 0.4, 1.4, 10, 48), new THREE.MeshStandardMaterial({ color: 0x5b646c, roughness: 0.5 }));
+    if (thin === 'x') { ring.rotation.y = Math.PI / 2; ring.position.x = c.sx / 2 + 0.6; }
+    else if (thin === 'y') { ring.rotation.x = Math.PI / 2; ring.position.y = c.sy / 2 + 0.6; }
+    else ring.position.z = c.sz / 2 + 0.6;
+    m.add(ring);
+  }
+  parent.add(m);
+  register(m, { ...c, cat: KIND_LABEL[c.kind] || 'Hardware', status: STATUS[c.id] || (c.kind === 'empty' ? 'std' : 'est') }, LAYER_OF(c.id));
+}
+
+// USB loop cable: hub cable leaves the right wall and plugs back into the board's right USB-A port
+{
+  const [x1, y1, z1, x2, y2, z2] = D.loop;
+  const pts = [[x1 - 6, y1, z1], [x1 + 8, y1, z1], [x1 + 22, y1 + 4, z1 + 8], [x1 + 26, (y1 + y2) / 2 + 6, (z1 + z2) / 2], [x2 + 22, y2 + 4, z2 - 8], [x2 + 8, y2, z2], [x2 - 10, y2, z2]]
+    .map(p => new THREE.Vector3(...p));
+  const cable = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 80, 2.2, 10, false), new THREE.MeshStandardMaterial({ color: 0x24292e, roughness: 0.7 }));
+  base.add(cable);
+  register(cable, { id: 'cable', label: 'USB loop cable', cat: 'Cable', status: 'std',
+    note: "The hub's own USB 3 cable. It leaves through the slot in the right wall and plugs into the board's right USB-A port just below, a loop of about 10 cm outside the box." }, 'power');
+}
+
+// printed parts: real OpenSCAD geometry (binary STL, base64 in JSON)
+const printMat = () => new THREE.MeshStandardMaterial({ color: COLORS.print, roughness: 0.8, metalness: 0, side: THREE.DoubleSide, transparent: true, opacity: 1 });
+const loader = new STLLoader();
+const PRINTS = [
+  { id: 'shell', file: 'viewer/shell.json', parent: base, z: 0 },
+  { id: 'shelf', file: 'viewer/shelf.json', parent: shelfLift, z: CASE.shelf },
+  { id: 'lid', file: 'viewer/lid_asm.json', parent: lidLift, z: CASE.h },
+];
+const printsReady = Promise.all(PRINTS.map(p => fetch(p.file).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(j => {
+  const bin = Uint8Array.from(atob(j.stl), ch => ch.charCodeAt(0));
+  const geo = loader.parse(bin.buffer); geo.computeVertexNormals();
+  const m = new THREE.Mesh(geo, printMat());
+  m.position.z = p.z; m.renderOrder = 2;
+  p.parent.add(m);
+  const meta = D.prints.find(q => q.id === p.id);
+  register(m, { ...meta, cat: '3D-printed part', status: 'std', dimsText: meta.dims }, p.id, true);
+  m.castShadow = true;
+})));
+
+// ---------- layers & modes ----------
+const layerOn = { shell: true, shelf: true, lid: true, board: true, ports: true, drives: true, power: true, fans: true };
+let xray = true;
+function applyLayers() {
+  for (const it of items) it.obj.visible = layerOn[it.layer];
+  const anyInside = ['board', 'drives', 'power', 'fans', 'ports'].some(k => layerOn[k]);
+  for (const it of items) if (it.print) {
+    const see = xray && anyInside;
+    const m = it.obj.material;
+    m.opacity = see ? 0.32 : 1; m.depthWrite = !see; m.needsUpdate = true;
+    it.obj.castShadow = !see;
+  }
+  if (selected && !selected.visible) clearSelection();
+  document.querySelectorAll('[data-layer]').forEach(i => { i.checked = layerOn[i.dataset.layer]; });
+  $('xray').checked = xray;
+  renderList();
+}
+document.querySelectorAll('[data-layer]').forEach(i => i.addEventListener('change', () => { layerOn[i.dataset.layer] = i.checked; setModeButtons(null); applyLayers(); }));
+$('xray').addEventListener('change', e => { xray = e.target.checked; applyLayers(); });
+
+const MODES = {
+  full:    { on: ['shell', 'shelf', 'lid', 'board', 'ports', 'drives', 'power', 'fans'], xray: true,
+             note: 'Everything in place: the board on the lower floor, four drive bays on the removable shelf above, hub and power on the right wall.' },
+  printed: { on: ['shell', 'shelf', 'lid'], xray: false,
+             note: 'Only the three parts you print: box shell, drive shelf and lid. Use Exploded to see them apart.' },
+  parts:   { on: ['board', 'ports', 'drives', 'power', 'fans'], xray: true,
+             note: 'The bought parts and the laptop board at their planned spots, with the printed case hidden.' },
+};
+function setModeButtons(name) {
+  document.querySelectorAll('#modes button').forEach(b => b.setAttribute('aria-checked', b.dataset.mode === name));
+}
+function setMode(name) {
+  if (!MODES[name]) name = 'full';
+  const M = MODES[name];
+  for (const k in layerOn) layerOn[k] = M.on.includes(k);
+  xray = M.xray;
+  setModeButtons(name);
+  $('note').textContent = M.note;
+  applyLayers();
+  try { history.replaceState(null, '', '#' + name); } catch (e) {}
+}
+document.querySelectorAll('#modes button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+
+// ---------- explode ----------
+const EXPLODE = [['Closed', 0], ['Open', 0.45], ['Exploded', 1]];
+let explode = 0, explodeTarget = 0;
+const seg = $('explodeSeg');
+for (const [label, v] of EXPLODE) {
+  const b = document.createElement('button'); b.textContent = label; b.dataset.v = v;
+  b.addEventListener('click', () => setExplode(v)); seg.appendChild(b);
+}
+function setExplode(v) {
+  explodeTarget = v;
+  seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.v === v));
+}
+function applyExplode() {
+  shelfLift.position.z = explode * 170;
+  lidLift.position.z = explode * 300;
+}
+
+// ---------- dimensions ----------
+const labelsEl = $('labels');
+const dimGroup = new THREE.Group(); scene.add(dimGroup);
+const dimMat = new THREE.LineBasicMaterial({ color: 0x55585e });
+const dims = [];
+function dim(a, b, n, text) {
+  const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), N = new THREE.Vector3(...n);
+  const pa = A.clone().add(N), pb = B.clone().add(N);
+  const line = (p, q) => dimGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([p, q]), dimMat));
+  line(pa, pb); line(A, pa.clone().addScaledVector(N, 0.25)); line(B, pb.clone().addScaledVector(N, 0.25));
+  const el = document.createElement('div'); el.className = 'dim'; el.textContent = text; labelsEl.appendChild(el);
+  dims.push({ el, at: pa.clone().lerp(pb, 0.5) });
+}
+dim([0, 0, 0], [CASE.l, 0, 0], [0, -26, 0], `${Math.round(CASE.l)} mm`);
+dim([CASE.l, 0, 0], [CASE.l, CASE.w, 0], [26, 0, 0], `${Math.round(CASE.w)} mm`);
+dim([0, 0, 0], [0, 0, CASE.h], [-20, -20, 0], `${Math.round(CASE.h)} mm`);
+let dimsOn = true;
+$('dimsToggle').addEventListener('change', e => { dimsOn = e.target.checked; });
+const v3 = new THREE.Vector3();
+function placeLabels() {
+  const show = dimsOn && explode < 0.05 && layerOn.shell;
+  dimGroup.visible = show;
+  for (const d of dims) {
+    v3.copy(d.at).project(camera);
+    const vis = show && v3.z < 1;
+    d.el.style.display = vis ? '' : 'none';
+    if (vis) d.el.style.transform = `translate(-50%,-50%) translate(${(v3.x + 1) / 2 * innerWidth}px,${(1 - v3.y) / 2 * innerHeight}px)`;
+  }
+}
+
+// ---------- views ----------
+// [camera position, target, explode, layers to force on/off]
+const k = isSmall ? 1.4 : 1.08;
+const off = (dx, dy, dz) => [C.x + dx * k, C.y + dy * k, C.z + dz * k];
+const VIEWS = {
+  overview: [off(-300, -470, 300), [C.x, C.y, C.z - 10], 0],
+  exploded: [off(-420, -660, 470), [C.x, C.y, C.z + 150], 1],
+  ports:    [off(430, -230, 60), [CASE.l - 10, C.y, 28], 0],
+  left:     [off(-470, -170, 110), [0, C.y, C.z], 0],
+  back:     [off(160, 470, 230), [C.x, CASE.w, C.z], 0],
+  top:      [off(0, -1, 640), [C.x, C.y, 0], 0],
+  board:    [off(-90, -300, 330), [C.x, C.y, 10], 0, { board: true, ports: true, shelf: false, lid: false, drives: false, fans: false }],
+  drives:   [off(-200, -330, 360), [C.x - 15, C.y, 75], 0, { drives: true, lid: false }],
+};
+let tween = null;
+function setView(name, instant = false) {
+  const [p, t, ex, force] = VIEWS[name];
+  setExplode(ex);
+  if (force) {
+    const before = JSON.stringify(layerOn);
+    Object.assign(layerOn, force);
+    if (JSON.stringify(layerOn) !== before) { setModeButtons(null); applyLayers(); }
+  }
+  document.querySelectorAll('#views button').forEach(b => b.setAttribute('aria-pressed', b.dataset.view === name));
+  const p1 = new THREE.Vector3(...p), t1 = new THREE.Vector3(...t);
+  if (instant) { camera.position.copy(p1); orbit.target.copy(t1); explode = ex; applyExplode(); orbit.update(); return; }
+  tween = { p0: camera.position.clone(), t0: orbit.target.clone(), p1, t1, s: performance.now(), d: 850 };
+}
+document.querySelectorAll('#views button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+orbit.addEventListener('start', () => { tween = null; document.querySelectorAll('#views button').forEach(b => b.setAttribute('aria-pressed', false)); });
+
+// ---------- panel ----------
+const panel = $('panel'), layersBtn = $('layersBtn');
+const togglePanel = open => { panel.classList.toggle('open', open); layersBtn.setAttribute('aria-expanded', open); };
+layersBtn.addEventListener('click', () => togglePanel(!panel.classList.contains('open')));
+$('closePanel').addEventListener('click', () => togglePanel(false));
+panel.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+  panel.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  panel.querySelectorAll('[data-pane]').forEach(p => { p.hidden = p.dataset.pane !== b.dataset.tab; });
+}));
+const hex = n => '#' + n.toString(16).padStart(6, '0');
+const GROUPS = [
+  ['Printed', it => it.print],
+  ['Lower floor: board', it => !it.print && it.info.floor === 'lower'],
+  ['Upper floor: drives & power', it => !it.print && it.info.floor !== 'lower'],
+];
+function renderList() {
+  if (items.length < D.comps.length + 4) return;
+  $('plist').innerHTML = GROUPS.map(([title, f]) => `<h2>${title}</h2><div class="plist">${items.filter(f).map(it => {
+    const i = it.info, color = it.print ? COLORS.print : (i.id === 'cable' ? 0x24292e : COLORS[i.kind] ?? COLORS.metal);
+    const size = it.print ? i.dims.replace(' mm', '') : (i.sx ? `${Math.round(i.sx)}×${Math.round(i.sy)}×${Math.round(i.sz)}` : '');
+    return `<button class="prow" data-id="${i.id}" aria-pressed="${selected?.userData.info.id === i.id}" ${it.obj.visible ? '' : 'style="opacity:.45"'}><i style="background:${hex(color)}"></i><span>${i.label}</span><small>${size}</small></button>`;
+  }).join('')}</div>`).join('');
+}
+$('plist').addEventListener('click', e => {
+  const b = e.target.closest('.prow'); if (!b) return;
+  const it = items.find(x => x.id === b.dataset.id);
+  if (!it.obj.visible) { layerOn[it.layer] = true; setModeButtons(null); applyLayers(); }
+  select(it.obj, true);
+  if (isSmall) togglePanel(false);
+});
+
+// ---------- selection ----------
+const card = $('card');
+const helper = new THREE.BoxHelper(undefined, 0xc8612a); helper.visible = false; helper.material.depthTest = false; helper.renderOrder = 10; scene.add(helper);
+let selected = null;
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+const visibleChain = o => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
+const fmt = n => (Math.round(n * 10) / 10).toString();
+function pick(cx, cy) {
+  ndc.set(cx / innerWidth * 2 - 1, -cy / innerHeight * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const hits = ray.intersectObjects(pickables, true).filter(h => visibleChain(h.object));
+  const owner = h => { let o = h.object; while (o && !o.userData.info) o = o.parent; return o; };
+  // with a see-through case, prefer what's inside it
+  const inside = xray ? hits.find(h => owner(h) && !items.find(i => i.obj === owner(h)).print) : null;
+  const h = inside || hits[0];
+  return h ? owner(h) : null;
+}
+function select(o, focus = false) {
+  selected = o; const i = o.userData.info;
+  card.querySelector('.cat').innerHTML = `${i.cat} <span class="tag ${i.status}">${i.status === 'est' ? 'estimate · measure' : (i.cat === '3D-printed part' ? 'fits a 256 mm bed' : 'standard size')}</span>`;
+  card.querySelector('h3').textContent = i.label;
+  card.querySelector('.dims').textContent = i.dimsText ? i.dimsText : (i.sx ? `${fmt(i.sx)} × ${fmt(i.sy)} × ${fmt(i.sz)} mm` : '');
+  card.querySelector('p').textContent = i.note || '';
+  const dl = $('cardDl'), stl = { shell: 'case/stl/shell.stl', shelf: 'case/stl/shelf.stl', lid: 'case/stl/lid.stl' }[i.id];
+  dl.hidden = !stl; if (stl) { dl.href = stl; dl.textContent = `Download ${i.id}.stl`; }
+  card.classList.add('show'); helper.setFromObject(o); helper.visible = true;
+  $('legend').style.opacity = 0; $('hint').style.opacity = 0;
+  if (focus) {
+    const c = new THREE.Box3().setFromObject(o).getCenter(new THREE.Vector3());
+    tween = { p0: camera.position.clone(), t0: orbit.target.clone(), p1: camera.position.clone().add(c.clone().sub(orbit.target)), t1: c, s: performance.now(), d: 700 };
+  }
+  renderList();
+}
+function clearSelection() { selected = null; card.classList.remove('show'); helper.visible = false; $('legend').style.opacity = 1; renderList(); }
+card.querySelector('button').addEventListener('click', clearSelection);
+let down = null;
+renderer.domElement.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY }; });
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 8) return;
+  const o = pick(e.clientX, e.clientY); o ? select(o) : clearSelection();
+  if (isSmall) togglePanel(false);
+});
+renderer.domElement.addEventListener('pointermove', e => {
+  if (e.buttons) return;
+  renderer.domElement.style.cursor = pick(e.clientX, e.clientY) ? 'pointer' : 'grab';
+});
+
+// ---------- build notes sheet ----------
+const sheet = $('sheet');
+const DOCS = ['cost', 'parts', 'display', 'storage', 'files'];
+function openDoc(name) {
+  if (!DOCS.includes(name)) return;
+  sheet.classList.add('open');
+  sheet.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.doc === name));
+  sheet.querySelectorAll('[data-docpane]').forEach(p => { p.hidden = p.dataset.docpane !== name; });
+  sheet.querySelector('.body').scrollTop = 0;
+  try { history.replaceState(null, '', '#' + name); } catch (e) {}
+}
+function closeDoc() {
+  sheet.classList.remove('open');
+  const m = document.querySelector('#modes [aria-checked=true]');
+  try { history.replaceState(null, '', m ? '#' + m.dataset.mode : location.pathname); } catch (e) {}
+}
+document.querySelectorAll('[data-doc]').forEach(b => b.addEventListener('click', () => openDoc(b.dataset.doc)));
+$('closeSheet').addEventListener('click', closeDoc);
+sheet.addEventListener('click', e => { if (e.target === sheet) closeDoc(); });
+$('bom').innerHTML = D.bom.map(b => `<div class="bi"><span class="q">${b.qty}</span><span><a href="${b.url}" target="_blank" rel="noopener">${b.name}</a><span class="src">${b.search ? 'Daraz search' : 'Daraz'}</span></span><span class="why">${b.why}</span></div>`).join('');
+document.querySelectorAll('.doc table').forEach(t => { const w = document.createElement('div'); w.className = 'tw'; t.replaceWith(w); w.appendChild(t); });
+document.querySelectorAll('.doc a[href^="http"]').forEach(a => { a.target = '_blank'; a.rel = 'noopener'; });
+addEventListener('keydown', e => { if (e.key === 'Escape') { if (sheet.classList.contains('open')) closeDoc(); else { clearSelection(); togglePanel(false); } } });
+
+// ---------- loop ----------
+function fit() {
+  camera.aspect = innerWidth / innerHeight;
+  if (innerWidth > 760) camera.setViewOffset(innerWidth, innerHeight, 140, 0, innerWidth, innerHeight); else camera.clearViewOffset();
+  camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight);
+}
+addEventListener('resize', fit); fit();
+const ease = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+renderer.setAnimationLoop(now => {
+  if (tween) {
+    const t = reduce ? 1 : Math.min(1, (now - tween.s) / tween.d), e = ease(t);
+    camera.position.lerpVectors(tween.p0, tween.p1, e); orbit.target.lerpVectors(tween.t0, tween.t1, e);
+    if (t === 1) tween = null;
+  }
+  if (Math.abs(explodeTarget - explode) > 0.001) { explode += (explodeTarget - explode) * (reduce ? 1 : 0.12); applyExplode(); }
+  orbit.update();
+  if (selected) helper.setFromObject(selected);
+  renderer.render(scene, camera);
+  placeLabels();
+});
+
+const hash = location.hash.slice(1).toLowerCase();
+setMode(MODES[hash] ? hash : 'full');
+setView('overview', true);
+if (DOCS.includes(hash)) openDoc(hash);
+printsReady.then(() => { applyLayers(); $('loader').classList.add('done'); })
+  .catch(() => { $('loader').textContent = 'Could not load the case model. Reload the page to try again.'; });
+setTimeout(() => { $('hint').style.opacity = 0; }, 9000);
+window.envyCase = { camera, orbit }; // handy for console tinkering
+</script>
+</body>
+</html>
